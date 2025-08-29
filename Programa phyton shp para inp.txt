@@ -1,0 +1,98 @@
+!pip install geopandas wntr
+import geopandas as gpd
+import wntr
+
+# Caminhos para os arquivos
+shapefile_nodes = ''
+shapefile_links = ''
+output_inp = '/content/RA_AREA_Simulacao.inp'
+
+# Leitura dos shapefiles
+nodes_gdf = gpd.read_file(shapefile_nodes)
+links_gdf = gpd.read_file(shapefile_links)
+
+# Inicializa a rede EPANET
+wn = wntr.network.WaterNetworkModel()
+
+# Dicionário para armazenar os nós
+nodes_dict = {}
+
+# Adiciona os nós a partir das coordenadas dos trechos
+for index, row in links_gdf.iterrows():
+    start_point = row.geometry.coords[0]
+    end_point = row.geometry.coords[-1]
+
+    start_coords = (round(start_point[0], 6), round(start_point[1], 6))
+    end_coords = (round(end_point[0], 6), round(end_point[1], 6))
+
+    if start_coords not in nodes_dict:
+        node_id = f"N{len(nodes_dict) + 1}"
+        nodes_dict[start_coords] = node_id
+        wn.add_junction(node_id, base_demand=0, elevation=0, coordinates=start_coords)
+
+    if end_coords not in nodes_dict:
+        node_id = f"N{len(nodes_dict) + 1}"
+        nodes_dict[end_coords] = node_id
+        wn.add_junction(node_id, base_demand=0, elevation=0, coordinates=end_coords)
+
+# Atualiza os nós com elevação e demanda
+for index, row in nodes_gdf.iterrows():
+    coords = (round(row.geometry.x, 6), round(row.geometry.y, 6))
+    node_id = nodes_dict.get(coords)
+    if node_id:
+        junction = wn.get_node(node_id)
+        print(f"Updating node {node_id} with elevation {row['cota']} and demand {row['Demanda']}")
+        junction.elevation = row['cota'] / 3.280839895054167  # As cotas já estão em metros
+        junction.demand_timeseries_list[0].base_value = row['Demanda'] / 15850.32314147994  # Demandas em LPS
+
+# Verifique os detalhes dos nós após a atualização
+for node_id in wn.junction_name_list:
+    junction = wn.get_node(node_id)
+    print(f"Node {node_id} details: elevation={junction.elevation}, demand={junction.demand_timeseries_list[0].base_value}")
+
+# Adiciona as ligações
+for index, row in links_gdf.iterrows():
+    start_point = row.geometry.coords[0]
+    end_point = row.geometry.coords[-1]
+
+    start_coords = (round(start_point[0], 6), round(start_point[1], 6))
+    end_coords = (round(end_point[0], 6), round(end_point[1], 6))
+
+    node1 = nodes_dict[start_coords]
+    node2 = nodes_dict[end_coords]
+    diameter = row['diameter'] / 39.37007874  # Converte diâmetro para mm
+    length = row['Shape_Leng'] / 3.280839895032449  # Assumindo que está em metros
+    roughness = row['rugosidade']
+
+    print(f"Adding pipe with diameter {diameter} m, length {length} m, roughness {roughness}")
+    link_id = f"P{len(wn.links) + 1}"
+    wn.add_pipe(link_id, node1, node2, length, diameter, roughness)
+
+    pipe = wn.get_link(link_id)
+    print(f"Pipe {link_id} details: {pipe.diameter} m, {pipe.length} m, {pipe.roughness}")
+
+# Salva a rede no formato EPANET .inp
+wntr.network.write_inpfile(wn, output_inp)
+
+# Ajusta o arquivo .inp para garantir as unidades corretas
+with open(output_inp, 'r') as file:
+    data = file.readlines()
+
+# Atualiza a seção [OPTIONS] com as unidades corretas
+for i, line in enumerate(data):
+    if line.startswith('[OPTIONS]'):
+        options_index = i
+        break
+
+# Insere as unidades corretas na seção [OPTIONS]
+options = [
+    'Units               LPS\n',
+    'FlowUnits           LPS\n',
+    'Headloss            H-W\n'
+]
+
+data[options_index+1:options_index+1] = options
+
+# Escreve de volta para o arquivo .inp
+with open(output_inp, 'w') as file:
+    file.writelines(data)

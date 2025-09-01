@@ -1,0 +1,3 @@
+[runner]
+# Fixa a versão do Python para 3.11, que tem amplo suporte
+pythonVersion = "3.11"

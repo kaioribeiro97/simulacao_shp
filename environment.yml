@@ -1,6 +1,7 @@
 name: simulacao-shp
 channels:
   - conda-forge
+  - nodefaults  # Impede o Conda de usar o canal 'defaults'
 dependencies:
   - python=3.11
   - streamlit=1.36.0

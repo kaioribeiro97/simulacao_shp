@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python=3.11
-  - streamlit
-  - geopandas
-  - wntr
+  - streamlit=1.36.0
+  - geopandas=0.14.4
+  - wntr=1.3.0
   - pip

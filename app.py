@@ -70,7 +70,7 @@ def convert_shp_to_inp(zip_nodes_path, zip_links_path):
                     junction.demand_timeseries_list[0].base_value = row['Demanda'] / 15850.32314147994
 
             # Validação e adição dos trechos
-            required_link_cols = {'Diametro', 'Extensao', 'Rugosidade'}
+            required_link_cols = {'diameter', 'Shape__Len', 'rugosidade'}
             if not required_link_cols.issubset(links_gdf.columns):
                  raise ValueError(f"O shapefile de trechos deve conter as colunas: {', '.join(required_link_cols)}")
             for _, row in links_gdf.iterrows():
@@ -81,12 +81,12 @@ def convert_shp_to_inp(zip_nodes_path, zip_links_path):
                 node1 = nodes_dict[start_coords]
                 node2 = nodes_dict[end_coords]
                 link_id = f"P{len(wn.links) + 1}"
-                diameter_m = row['Diametro'] / 39.37007874
-                length_m = row['Extensao'] / 3.280839895032449
+                diameter_m = row['diameter'] / 39.37007874
+                length_m = row['Shape__Len'] / 3.280839895032449
                 wn.add_pipe(link_id, node1, node2,
                             length=length_m,
                             diameter=diameter_m,
-                            roughness=row['Rugosidade'],
+                            roughness=row['rugosidade'],
                             minor_loss=0.0)
 
             # Salva a rede em um arquivo .inp temporário

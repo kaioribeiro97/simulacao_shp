@@ -4,8 +4,8 @@ channels:
   - nodefaults
 dependencies:
   - python=3.11
-  - libgdal  # Adicionando a dependência principal explicitamente
-  - geopandas=0.14.4
+  # - libgdal  # Adicionando a dependência principal explicitamente
+  # - geopandas=0.14.4
   - wntr=1.3.0
   - streamlit=1.36.0
   - pip

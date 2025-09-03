@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor SHP para INP</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: auto; }
+        h1, h2 { color: #333; }
+        .container { background: #f4f4f4; padding: 20px; border-radius: 5px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="file"] { margin-bottom: 20px; }
+        input[type="submit"] { background: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; }
+        input[type="submit"]:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Conversor de Shapefile para EPANET (.inp)</h1>
+        <p>
+            Faça o upload dos arquivos .zip contendo os shapefiles de Nós e Trechos para gerar o arquivo .inp correspondente.
+        </p>
+        
+        <form action="/" method="post" enctype="multipart/form-data">
+            <h2>Upload dos Arquivos</h2>
+            
+            <label for="file_nodes">1. Arquivo .zip do Shapefile de Nós:</label>
+            <input type="file" id="file_nodes" name="file_nodes" accept=".zip" required>
+            
+            <label for="file_links">2. Arquivo .zip do Shapefile de Trechos:</label>
+            <input type="file" id="file_links" name="file_links" accept=".zip" required>
+            
+            <br>
+            <input type="submit" value="Converter e Baixar .inp">
+        </form>
+    </div>
+</body>
+</html>
